@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Atlas / Every kind of website</title>
+	<style>
+		@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+		:root { --ink: #191919; --paper: #f3f0e9; --line: #c9c3b8; --coral: #ff674d; --blue: #3f62ff; --lime: #d9ed60; --muted: #716d65; }
+		* { box-sizing: border-box; }
+		body { margin: 0; color: var(--ink); background: var(--paper); font-family: 'Space Grotesk', sans-serif; }
+		body:before { content: ''; position: fixed; inset: 0; pointer-events: none; opacity: .27; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.1'/%3E%3C/svg%3E"); z-index: 10; }
+		.wrap { width: min(1180px, calc(100% - 40px)); margin: auto; }
+		header { border-bottom: 1px solid var(--ink); padding: 20px 0; }
+		nav { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+		.logo { display: flex; gap: 11px; align-items: center; font: 500 13px 'DM Mono', monospace; letter-spacing: .05em; }
+		.logo-mark { width: 26px; height: 26px; display: grid; place-items: center; color: var(--paper); background: var(--ink); border-radius: 50%; font-weight: 500; }
+		.nav-links { display: flex; gap: 26px; font-size: 13px; }
+		a { color: inherit; text-decoration: none; }
+		.nav-cta { padding: 10px 15px; border: 1px solid var(--ink); border-radius: 100px; font-size: 12px; font-weight: 600; }
+		.hero { min-height: 535px; display: grid; grid-template-columns: 1.18fr .82fr; align-items: center; gap: 60px; padding: 78px 0 70px; }
+		.eyebrow, .meta { font: 500 11px 'DM Mono', monospace; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); }
+		h1 { font-size: clamp(58px, 8vw, 105px); letter-spacing: -.075em; line-height: .88; margin: 20px 0 28px; max-width: 750px; }
+		h1 em { color: var(--coral); font-style: normal; }
+		.hero-copy { max-width: 430px; color: #57534c; font-size: 17px; line-height: 1.45; }
+		.hero-actions { display: flex; align-items: center; gap: 24px; margin-top: 34px; }
+		.button { display: inline-flex; align-items: center; gap: 12px; border: 0; cursor: pointer; padding: 14px 19px; font: 600 13px 'Space Grotesk'; background: var(--ink); color: var(--paper); border-radius: 100px; }
+		.button span { color: var(--lime); font-size: 19px; line-height: 0; }
+		.text-link { border-bottom: 1px solid var(--ink); padding-bottom: 3px; font-size: 13px; }
+		.orbit { position: relative; min-height: 360px; }
+		.orbit:before { content: ''; position: absolute; width: 285px; height: 285px; border: 1px solid var(--ink); border-radius: 50%; left: 18%; top: 8%; }
+		.orbit:after { content: ''; position: absolute; width: 390px; height: 160px; border: 1px solid var(--ink); border-radius: 50%; transform: rotate(-36deg); left: 0; top: 28%; }
+		.planet { position: absolute; z-index: 1; width: 168px; height: 168px; border-radius: 50%; background: var(--coral); right: 18%; top: 25%; display: grid; place-items: center; font-size: 68px; letter-spacing: -.08em; color: var(--ink); box-shadow: 12px 14px 0 var(--blue); }
+		.orbit-label { position: absolute; z-index: 2; font: 11px 'DM Mono'; background: var(--lime); padding: 7px 9px; transform: rotate(-7deg); top: 15%; right: 5%; }
+		.marquee { border-top: 1px solid var(--ink); border-bottom: 1px solid var(--ink); overflow: hidden; white-space: nowrap; padding: 13px 0; font: 500 12px 'DM Mono'; }
+		.marquee div { animation: slide 22s linear infinite; display: inline-block; }
+		.marquee b { color: var(--coral); padding: 0 30px; }
+		@keyframes slide { to { transform: translateX(-30%); } }
+		.explore { padding: 75px 0 100px; }
+		.section-head { display: flex; justify-content: space-between; align-items: end; margin-bottom: 34px; }
+		h2 { font-size: clamp(32px, 5vw, 58px); letter-spacing: -.06em; line-height: .95; margin: 12px 0 0; }
+		.filters { display: flex; flex-wrap: wrap; gap: 8px; justify-content: end; }
+		.filter { padding: 9px 13px; background: transparent; border: 1px solid var(--line); border-radius: 100px; font: 11px 'DM Mono'; color: var(--muted); cursor: pointer; }
+		.filter.active, .filter:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+		.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+		.card { border: 1px solid var(--ink); min-height: 320px; display: flex; flex-direction: column; background: #e9e5dc; transition: transform .25s, opacity .25s; }
+		.card:hover { transform: translateY(-6px); }
+		.card.hidden { display: none; }
+		.preview { height: 200px; position: relative; overflow: hidden; background-size: cover; background-position: center; border-bottom: 1px solid var(--ink); }
+		.preview:after { content: ''; position: absolute; inset: 0; background: linear-gradient(120deg, rgba(25,25,25,.18), transparent 65%); }
+		.preview.one { background-image: url('https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=900&q=80'); }
+		.preview.two { background-image: url('https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=900&q=80'); }
+		.preview.three { background-image: url('https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&w=900&q=80'); }
+		.preview.four { background-image: url('https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=900&q=80'); }
+		.preview.five { background-image: url('https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=900&q=80'); }
+		.preview.six { background-image: url('https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=900&q=80'); }
+		.card-number { position: absolute; z-index: 1; top: 13px; left: 13px; background: var(--lime); padding: 5px 7px; font: 11px 'DM Mono'; }
+		.card-body { padding: 17px 17px 19px; display: flex; justify-content: space-between; align-items: end; flex: 1; gap: 15px; }
+		.card h3 { font-size: 22px; letter-spacing: -.04em; margin: 6px 0 0; }
+		.card p { font: 11px 'DM Mono'; color: var(--muted); margin: 0; }
+		.arrow { width: 34px; height: 34px; flex: 0 0 auto; border: 1px solid var(--ink); border-radius: 50%; display: grid; place-items: center; font-size: 20px; }
+		footer { border-top: 1px solid var(--ink); padding: 25px 0; display: flex; justify-content: space-between; font: 11px 'DM Mono'; color: var(--muted); }
+		@media (max-width: 760px) { .wrap { width: min(100% - 28px, 520px); } .nav-links { display: none; } .hero { display: block; min-height: auto; padding: 65px 0 30px; } h1 { font-size: 65px; } .orbit { transform: scale(.78); transform-origin: top center; margin: 0 -50px -80px; } .section-head { display: block; } .filters { justify-content: start; margin-top: 22px; } .grid { grid-template-columns: 1fr; } footer { gap: 20px; flex-wrap: wrap; } }
+	</style>
+</head>
+<body>
+	<header><div class="wrap"><nav><a class="logo" href="#top"><span class="logo-mark">A</span> ATLAS / 01</a><div class="nav-links"><a href="#explore">Explore</a><a href="#about">About</a><a href="#contact">Submit a site</a></div><a class="nav-cta" href="#explore">Browse all <span aria-hidden="true">↘</span></a></nav></div></header>
+	<main id="top">
+		<section class="hero wrap"><div><div class="eyebrow">A visual index of the internet</div><h1>Every site has a <em>shape.</em></h1><p class="hero-copy">A field guide to the places we click, scroll, shop, learn, play, and gather. Find a direction for your next digital project.</p><div class="hero-actions"><a class="button" href="#explore">Start exploring <span>↘</span></a><a class="text-link" href="#about">What is Atlas?</a></div></div><div class="orbit" aria-hidden="true"><span class="orbit-label">62,409 possibilities</span><div class="planet">.com</div></div></section>
+		<div class="marquee"><div>PORTFOLIOS <b>✳</b> STORES <b>✳</b> PUBLICATIONS <b>✳</b> COMMUNITIES <b>✳</b> TOOLS <b>✳</b> STUDIOS <b>✳</b> PORTFOLIOS <b>✳</b> STORES <b>✳</b> PUBLICATIONS <b>✳</b></div></div>
+		<section class="explore wrap" id="explore"><div class="section-head"><div><div class="eyebrow">01 / The collection</div><h2>Choose your<br>starting point.</h2></div><div class="filters" role="group" aria-label="Filter website types"><button class="filter active" data-filter="all">All sites</button><button class="filter" data-filter="work">Work</button><button class="filter" data-filter="culture">Culture</button><button class="filter" data-filter="commerce">Commerce</button><button class="filter" data-filter="utility">Utility</button></div></div>
+			<div class="grid">
+				<article class="card" data-type="work"><div class="preview one"><span class="card-number">01</span></div><div class="card-body"><div><p>WORK / IDENTITY</p><h3>Portfolio</h3></div><span class="arrow">↗</span></div></article>
+				<article class="card" data-type="commerce"><div class="preview two"><span class="card-number">02</span></div><div class="card-body"><div><p>COMMERCE / CATALOG</p><h3>Online store</h3></div><span class="arrow">↗</span></div></article>
+				<article class="card" data-type="culture"><div class="preview three"><span class="card-number">03</span></div><div class="card-body"><div><p>CULTURE / STORY</p><h3>Magazine</h3></div><span class="arrow">↗</span></div></article>
+				<article class="card" data-type="work"><div class="preview four"><span class="card-number">04</span></div><div class="card-body"><div><p>WORK / SERVICE</p><h3>Agency</h3></div><span class="arrow">↗</span></div></article>
+				<article class="card" data-type="culture"><div class="preview five"><span class="card-number">05</span></div><div class="card-body"><div><p>CULTURE / PEOPLE</p><h3>Community</h3></div><span class="arrow">↗</span></div></article>
+				<article class="card" data-type="utility"><div class="preview six"><span class="card-number">06</span></div><div class="card-body"><div><p>UTILITY / PRODUCT</p><h3>Dashboard</h3></div><span class="arrow">↗</span></div></article>
+			</div>
+		</section>
+	</main>
+	<footer class="wrap" id="about"><span>ATLAS © 2026 / MADE FOR THE CURIOUS</span><span id="contact">A SMALL MAP OF A VERY LARGE WEB ↗</span></footer>
+	<script>
+		const filters = document.querySelectorAll('.filter');
+		const cards = document.querySelectorAll('.card');
+		filters.forEach((filter) => filter.addEventListener('click', () => {
+			filters.forEach((item) => item.classList.remove('active'));
+			filter.classList.add('active');
+			const selected = filter.dataset.filter;
+			cards.forEach((card) => card.classList.toggle('hidden', selected !== 'all' && card.dataset.type !== selected));
+		}));
+	</script>
+</body>
+</html>
