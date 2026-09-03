@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Atlas / Interactive Map</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+    :root {
+      --ink: #191919;
+      --paper: #f3f0e9;
+      --line: rgba(25, 25, 25, 0.18);
+      --coral: #ff674d;
+      --blue: #3f62ff;
+      --lime: #d9ed60;
+      --muted: #716d65;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      background: var(--paper);
+      color: var(--ink);
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    .wrap {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    .topbar {
+      border-bottom: 1px solid var(--ink);
+      background: rgba(243, 240, 233, 0.95);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      min-height: 74px;
+      gap: 20px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font: 500 13px 'DM Mono', monospace;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      text-decoration: none;
+      color: var(--ink);
+    }
+
+    .logo-mark {
+      width: 28px;
+      height: 28px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--ink);
+      color: var(--paper);
+    }
+
+    .back-link {
+      padding: 10px 16px;
+      border: 1px solid var(--ink);
+      border-radius: 999px;
+      font: 600 12px 'Space Grotesk', sans-serif;
+      text-decoration: none;
+      color: var(--ink);
+    }
+
+    .page {
+      padding: 40px 0 80px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 0.8fr 1.2fr;
+      gap: 24px;
+      align-items: center;
+      margin-bottom: 22px;
+    }
+
+    .eyebrow {
+      font: 500 11px 'DM Mono', monospace;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    h1 {
+      margin: 12px 0 18px;
+      font-size: clamp(42px, 5vw, 72px);
+      line-height: .9;
+      letter-spacing: -.07em;
+    }
+
+    .lede {
+      max-width: 560px;
+      color: #504c48;
+      line-height: 1.6;
+      font-size: 17px;
+    }
+
+    .map-shell {
+      position: relative;
+      min-height: 620px;
+      border: 1px solid var(--ink);
+      background: linear-gradient(180deg, rgba(255,255,255,0.18), rgba(255,255,255,0.05));
+      overflow: hidden;
+    }
+
+    .map-shell::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(25,25,25,0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(25,25,25,0.06) 1px, transparent 1px);
+      background-size: 26px 26px;
+    }
+
+    .network {
+      position: absolute;
+      inset: 0;
+    }
+
+    .node {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--ink);
+      border: 2px solid var(--paper);
+      box-shadow: 0 0 0 1px rgba(25,25,25,0.2);
+      cursor: pointer;
+      transition: transform .15s ease, box-shadow .15s ease;
+    }
+
+    .node:hover {
+      transform: scale(1.2);
+      box-shadow: 0 0 0 4px rgba(63,98,255,0.15);
+    }
+
+    .node.coral { background: var(--coral); }
+    .node.blue { background: var(--blue); }
+    .node.lime { background: var(--lime); }
+
+    .link {
+      position: absolute;
+      height: 1px;
+      background: linear-gradient(90deg, rgba(25,25,25,0.1), rgba(25,25,25,0.6), rgba(25,25,25,0.1));
+      transform-origin: left center;
+      opacity: 0.9;
+    }
+
+    .node-label {
+      position: absolute;
+      padding: 6px 8px;
+      border: 1px solid var(--ink);
+      background: var(--paper);
+      font: 500 10px 'DM Mono', monospace;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--ink);
+      padding: 8px 10px;
+      font: 500 10px 'DM Mono', monospace;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--muted);
+    }
+
+    .legend-swatch {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    @media (max-width: 760px) {
+      .hero {
+        grid-template-columns: 1fr;
+      }
+      .map-shell {
+        min-height: 500px;
+      }
+      .node-label {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap">
+      <nav>
+        <a class="logo" href="index.html"><span class="logo-mark">A</span> Atlas / map</a>
+        <a class="back-link" href="index.html">Back to home</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap page">
+    <section class="hero">
+      <div>
+        <div class="eyebrow">Internet map</div>
+        <h1>Connected <br>worlds.</h1>
+      </div>
+      <p class="lede">This small map represents the vast network behind the web: overlapping communities, marketplaces, stories, tools, and identities all connected by shared purpose and movement.</p>
+    </section>
+
+    <section class="map-shell" aria-label="Interactive map of online connections">
+      <div class="network" id="network"></div>
+    </section>
+
+    <div class="legend" aria-label="Map legend">
+      <div class="legend-item"><span class="legend-swatch" style="background: var(--coral);"></span> Portfolios</div>
+      <div class="legend-item"><span class="legend-swatch" style="background: var(--blue);"></span> Commerce</div>
+      <div class="legend-item"><span class="legend-swatch" style="background: var(--lime);"></span> Communities</div>
+    </div>
+  </main>
+
+  <script>
+    const network = document.getElementById('network');
+    const nodes = [
+      { id: 'atlass', x: 22, y: 28, type: 'coral', label: 'Atlas' },
+      { id: 'portfolio', x: 36, y: 18, type: 'coral', label: 'Portfolio' },
+      { id: 'store', x: 58, y: 24, type: 'blue', label: 'Store' },
+      { id: 'magazine', x: 68, y: 54, type: 'lime', label: 'Magazine' },
+      { id: 'agency', x: 40, y: 62, type: 'coral', label: 'Agency' },
+      { id: 'community', x: 24, y: 70, type: 'lime', label: 'Community' },
+      { id: 'dashboard', x: 82, y: 72, type: 'blue', label: 'Dashboard' },
+      { id: 'world', x: 75, y: 38, type: 'blue', label: 'Internet' }
+    ];
+
+    const connect = [
+      ['atlass', 'portfolio'],
+      ['atlass', 'store'],
+      ['atlass', 'community'],
+      ['portfolio', 'agency'],
+      ['store', 'world'],
+      ['magazine', 'world'],
+      ['dashboard', 'world'],
+      ['community', 'magazine'],
+      ['agency', 'store'],
+      ['community', 'dashboard']
+    ];
+
+    const mapCenter = { x: 50, y: 50 };
+
+    connect.forEach(([from, to]) => {
+      const a = nodes.find((n) => n.id === from);
+      const b = nodes.find((n) => n.id === to);
+      const dx = b.x - a.x;
+      const dy = b.y - a.y;
+      const length = Math.hypot(dx, dy);
+      const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+
+      const link = document.createElement('span');
+      link.className = 'link';
+      link.style.left = `${a.x}%`;
+      link.style.top = `${a.y}%`;
+      link.style.width = `${length}%`;
+      link.style.transform = `rotate(${angle}deg)`;
+      link.style.opacity = '0.7';
+      network.appendChild(link);
+    });
+
+    nodes.forEach((node) => {
+      const el = document.createElement('button');
+      el.type = 'button';
+      el.className = `node ${node.type}`;
+      el.title = node.label;
+      el.style.left = `${node.x}%`;
+      el.style.top = `${node.y}%`;
+      el.style.transform = 'translate(-50%, -50%)';
+      el.setAttribute('aria-label', node.label);
+      network.appendChild(el);
+
+      const label = document.createElement('span');
+      label.className = 'node-label';
+      label.textContent = node.label;
+      label.style.left = `${node.x + 2}%`;
+      label.style.top = `${node.y - 8}%`;
+      network.appendChild(label);
+    });
+  </script>
+</body>
+</html>
