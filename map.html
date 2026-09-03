@@ -3,46 +3,52 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Atlas / Interactive Map</title>
+  <title>Atlas / World Map</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
     :root {
       --ink: #191919;
       --paper: #f3f0e9;
-      --line: rgba(25, 25, 25, 0.18);
       --coral: #ff674d;
       --blue: #3f62ff;
       --lime: #d9ed60;
       --muted: #716d65;
+      --line: rgba(25,25,25,0.28);
+      --bg-1: #f8f4ee;
+      --bg-2: #ece5d9;
     }
 
     * { box-sizing: border-box; }
-    html, body { margin: 0; min-height: 100%; }
+    html, body { margin: 0; height: 100%; }
     body {
+      font-family: 'Space Grotesk', sans-serif;
       background: var(--paper);
       color: var(--ink);
-      font-family: 'Space Grotesk', sans-serif;
-    }
-
-    .wrap {
-      width: min(1180px, calc(100% - 32px));
-      margin: 0 auto;
+      overflow: hidden;
     }
 
     .topbar {
-      border-bottom: 1px solid var(--ink);
-      background: rgba(243, 240, 233, 0.95);
-      position: sticky;
+      position: fixed;
       top: 0;
+      left: 0;
+      right: 0;
       z-index: 20;
+      border-bottom: 1px solid var(--ink);
+      background: rgba(243,240,233,.9);
+      backdrop-filter: blur(8px);
+    }
+
+    .wrap {
+      width: min(1280px, calc(100% - 32px));
+      margin: 0 auto;
     }
 
     nav {
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      min-height: 74px;
+      justify-content: space-between;
+      min-height: 72px;
       gap: 20px;
     }
 
@@ -50,11 +56,11 @@
       display: flex;
       align-items: center;
       gap: 10px;
-      font: 500 13px 'DM Mono', monospace;
-      text-transform: uppercase;
-      letter-spacing: .08em;
       text-decoration: none;
       color: var(--ink);
+      font: 500 13px 'DM Mono', monospace;
+      letter-spacing: .08em;
+      text-transform: uppercase;
     }
 
     .logo-mark {
@@ -65,150 +71,136 @@
       border-radius: 50%;
       background: var(--ink);
       color: var(--paper);
+      font-weight: 700;
     }
 
     .back-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       padding: 10px 16px;
       border: 1px solid var(--ink);
       border-radius: 999px;
-      font: 600 12px 'Space Grotesk', sans-serif;
       text-decoration: none;
       color: var(--ink);
+      font: 600 12px 'Space Grotesk', sans-serif;
     }
 
-    .page {
-      padding: 40px 0 80px;
-    }
-
-    .hero {
-      display: grid;
-      grid-template-columns: 0.8fr 1.2fr;
-      gap: 24px;
-      align-items: center;
-      margin-bottom: 22px;
-    }
-
-    .eyebrow {
-      font: 500 11px 'DM Mono', monospace;
-      letter-spacing: .12em;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
-
-    h1 {
-      margin: 12px 0 18px;
-      font-size: clamp(42px, 5vw, 72px);
-      line-height: .9;
-      letter-spacing: -.07em;
-    }
-
-    .lede {
-      max-width: 560px;
-      color: #504c48;
-      line-height: 1.6;
-      font-size: 17px;
-    }
-
-    .map-shell {
+    .viewport {
       position: relative;
-      min-height: 620px;
-      border: 1px solid var(--ink);
-      background: linear-gradient(180deg, rgba(255,255,255,0.18), rgba(255,255,255,0.05));
+      height: calc(100vh - 72px);
+      width: 100%;
+      margin-top: 72px;
       overflow: hidden;
+      background:
+        radial-gradient(circle at 20% 30%, rgba(255,103,77,0.12), transparent 20%),
+        radial-gradient(circle at 70% 40%, rgba(63,98,255,0.12), transparent 20%),
+        linear-gradient(135deg, var(--bg-1), var(--bg-2));
+      cursor: grab;
+      user-select: none;
     }
 
-    .map-shell::before {
-      content: '';
+    .viewport.dragging { cursor: grabbing; }
+
+    #world {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 2600px;
+      height: 1700px;
+      transform-origin: 0 0;
+      will-change: transform;
+    }
+
+    .grid {
       position: absolute;
       inset: 0;
-      pointer-events: none;
       background-image:
-        linear-gradient(rgba(25,25,25,0.06) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(25,25,25,0.06) 1px, transparent 1px);
-      background-size: 26px 26px;
+        linear-gradient(rgba(25,25,25,0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(25,25,25,0.05) 1px, transparent 1px);
+      background-size: 34px 34px;
+      opacity: 0.7;
     }
 
-    .network {
+    svg {
       position: absolute;
       inset: 0;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+    }
+
+    .link {
+      stroke: rgba(25,25,25,0.38);
+      stroke-width: 1.3;
+      fill: none;
     }
 
     .node {
-      position: absolute;
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: var(--ink);
-      border: 2px solid var(--paper);
-      box-shadow: 0 0 0 1px rgba(25,25,25,0.2);
+      stroke: rgba(255,255,255,0.8);
+      stroke-width: 2.2;
       cursor: pointer;
-      transition: transform .15s ease, box-shadow .15s ease;
+      transition: transform .15s ease;
     }
 
-    .node:hover {
-      transform: scale(1.2);
-      box-shadow: 0 0 0 4px rgba(63,98,255,0.15);
-    }
-
-    .node.coral { background: var(--coral); }
-    .node.blue { background: var(--blue); }
-    .node.lime { background: var(--lime); }
-
-    .link {
-      position: absolute;
-      height: 1px;
-      background: linear-gradient(90deg, rgba(25,25,25,0.1), rgba(25,25,25,0.6), rgba(25,25,25,0.1));
-      transform-origin: left center;
-      opacity: 0.9;
-    }
-
-    .node-label {
-      position: absolute;
-      padding: 6px 8px;
-      border: 1px solid var(--ink);
-      background: var(--paper);
-      font: 500 10px 'DM Mono', monospace;
-      text-transform: uppercase;
+    .node:hover { filter: brightness(1.06); }
+    .site-name {
+      font: 500 11px 'DM Mono', monospace;
       letter-spacing: .08em;
-      white-space: nowrap;
+      text-transform: uppercase;
+      fill: var(--ink);
+      paint-order: stroke;
+      stroke: rgba(243,240,233,0.9);
+      stroke-width: 4px;
+      stroke-linejoin: round;
+    }
+
+    .tooltip {
+      position: fixed;
+      z-index: 30;
       pointer-events: none;
-    }
-
-    .legend {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 18px;
-    }
-
-    .legend-item {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      border: 1px solid var(--ink);
       padding: 8px 10px;
-      font: 500 10px 'DM Mono', monospace;
+      border: 1px solid var(--ink);
+      background: rgba(243,240,233,0.95);
+      color: var(--ink);
+      font: 500 11px 'DM Mono', monospace;
       text-transform: uppercase;
       letter-spacing: .08em;
-      color: var(--muted);
+      opacity: 0;
+      transform: translate(-50%, -110%);
+      transition: opacity .15s ease;
     }
 
-    .legend-swatch {
-      width: 10px;
-      height: 10px;
+    .tooltip.visible { opacity: 1; }
+
+    .controls {
+      position: fixed;
+      right: 26px;
+      bottom: 26px;
+      z-index: 25;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .control-btn {
+      border: 1px solid var(--ink);
+      background: rgba(243,240,233,.92);
+      color: var(--ink);
+      font: 600 14px 'Space Grotesk', sans-serif;
+      width: 42px;
+      height: 42px;
       border-radius: 50%;
-      display: inline-block;
+      cursor: pointer;
     }
 
     @media (max-width: 760px) {
-      .hero {
-        grid-template-columns: 1fr;
+      .site-name {
+        font-size: 8px;
       }
-      .map-shell {
-        min-height: 500px;
-      }
-      .node-label {
-        display: none;
+      .controls {
+        right: 16px;
+        bottom: 18px;
       }
     }
   </style>
@@ -223,89 +215,246 @@
     </div>
   </header>
 
-  <main class="wrap page">
-    <section class="hero">
-      <div>
-        <div class="eyebrow">Internet map</div>
-        <h1>Connected <br>worlds.</h1>
-      </div>
-      <p class="lede">This small map represents the vast network behind the web: overlapping communities, marketplaces, stories, tools, and identities all connected by shared purpose and movement.</p>
-    </section>
-
-    <section class="map-shell" aria-label="Interactive map of online connections">
-      <div class="network" id="network"></div>
-    </section>
-
-    <div class="legend" aria-label="Map legend">
-      <div class="legend-item"><span class="legend-swatch" style="background: var(--coral);"></span> Portfolios</div>
-      <div class="legend-item"><span class="legend-swatch" style="background: var(--blue);"></span> Commerce</div>
-      <div class="legend-item"><span class="legend-swatch" style="background: var(--lime);"></span> Communities</div>
+  <div class="viewport" id="viewport">
+    <div id="world">
+      <div class="grid"></div>
+      <svg id="graph" viewBox="0 0 2600 1700" preserveAspectRatio="xMidYMid meet" aria-label="Map of known websites"></svg>
     </div>
-  </main>
+  </div>
+
+  <div class="controls" aria-label="map controls">
+    <button class="control-btn" id="zoomIn" type="button" aria-label="Zoom in">+</button>
+    <button class="control-btn" id="zoomOut" type="button" aria-label="Zoom out">−</button>
+    <button class="control-btn" id="reset" type="button" aria-label="Reset map">⊙</button>
+  </div>
+
+  <div class="tooltip" id="tooltip"></div>
 
   <script>
-    const network = document.getElementById('network');
-    const nodes = [
-      { id: 'atlass', x: 22, y: 28, type: 'coral', label: 'Atlas' },
-      { id: 'portfolio', x: 36, y: 18, type: 'coral', label: 'Portfolio' },
-      { id: 'store', x: 58, y: 24, type: 'blue', label: 'Store' },
-      { id: 'magazine', x: 68, y: 54, type: 'lime', label: 'Magazine' },
-      { id: 'agency', x: 40, y: 62, type: 'coral', label: 'Agency' },
-      { id: 'community', x: 24, y: 70, type: 'lime', label: 'Community' },
-      { id: 'dashboard', x: 82, y: 72, type: 'blue', label: 'Dashboard' },
-      { id: 'world', x: 75, y: 38, type: 'blue', label: 'Internet' }
+    const graph = document.getElementById('graph');
+    const world = document.getElementById('world');
+    const viewport = document.getElementById('viewport');
+    const tooltip = document.getElementById('tooltip');
+
+    const sites = [
+      { name: 'Google', url: 'https://google.com', x: 500, y: 280, group: 'search', color: '#3f62ff' },
+      { name: 'YouTube', url: 'https://youtube.com', x: 610, y: 350, group: 'video', color: '#ff674d' },
+      { name: 'Facebook', url: 'https://facebook.com', x: 740, y: 330, group: 'social', color: '#3f62ff' },
+      { name: 'Instagram', url: 'https://instagram.com', x: 820, y: 420, group: 'social', color: '#ff674d' },
+      { name: 'X', url: 'https://x.com', x: 680, y: 450, group: 'social', color: '#191919' },
+      { name: 'LinkedIn', url: 'https://linkedin.com', x: 870, y: 520, group: 'career', color: '#3f62ff' },
+      { name: 'GitHub', url: 'https://github.com', x: 960, y: 420, group: 'code', color: '#191919' },
+      { name: 'Reddit', url: 'https://reddit.com', x: 1030, y: 570, group: 'community', color: '#ff674d' },
+      { name: 'Wikipedia', url: 'https://wikipedia.org', x: 1110, y: 430, group: 'knowledge', color: '#3f62ff' },
+      { name: 'Amazon', url: 'https://amazon.com', x: 1130, y: 270, group: 'commerce', color: '#d9ed60' },
+      { name: 'Netflix', url: 'https://netflix.com', x: 1240, y: 520, group: 'media', color: '#ff674d' },
+      { name: 'Spotify', url: 'https://spotify.com', x: 1320, y: 660, group: 'media', color: '#d9ed60' },
+      { name: 'Apple', url: 'https://apple.com', x: 1050, y: 760, group: 'tech', color: '#191919' },
+      { name: 'Microsoft', url: 'https://microsoft.com', x: 880, y: 640, group: 'tech', color: '#3f62ff' },
+      { name: 'Adobe', url: 'https://adobe.com', x: 780, y: 760, group: 'creative', color: '#ff674d' },
+      { name: 'Canva', url: 'https://canva.com', x: 640, y: 770, group: 'creative', color: '#d9ed60' },
+      { name: 'Dropbox', url: 'https://dropbox.com', x: 600, y: 920, group: 'cloud', color: '#3f62ff' },
+      { name: 'Airbnb', url: 'https://airbnb.com', x: 740, y: 980, group: 'travel', color: '#ff674d' },
+      { name: 'Shopify', url: 'https://shopify.com', x: 850, y: 1020, group: 'commerce', color: '#d9ed60' },
+      { name: 'PayPal', url: 'https://paypal.com', x: 960, y: 990, group: 'finance', color: '#3f62ff' },
+      { name: 'Pinterest', url: 'https://pinterest.com', x: 1180, y: 930, group: 'inspiration', color: '#ff674d' },
+      { name: 'Twitch', url: 'https://twitch.tv', x: 1220, y: 820, group: 'video', color: '#3f62ff' },
+      { name: 'Discord', url: 'https://discord.com', x: 1360, y: 820, group: 'community', color: '#3f62ff' },
+      { name: 'Slack', url: 'https://slack.com', x: 1460, y: 900, group: 'work', color: '#ff674d' },
+      { name: 'Gmail', url: 'https://gmail.com', x: 1540, y: 820, group: 'mail', color: '#d9ed60' },
+      { name: 'Yahoo', url: 'https://yahoo.com', x: 1620, y: 730, group: 'search', color: '#3f62ff' },
+      { name: 'Bing', url: 'https://bing.com', x: 1720, y: 800, group: 'search', color: '#ff674d' },
+      { name: 'BBC', url: 'https://bbc.com', x: 1820, y: 610, group: 'news', color: '#3f62ff' },
+      { name: 'CNN', url: 'https://cnn.com', x: 1920, y: 700, group: 'news', color: '#ff674d' },
+      { name: 'NPR', url: 'https://npr.org', x: 2000, y: 620, group: 'news', color: '#d9ed60' },
+      { name: 'Medium', url: 'https://medium.com', x: 2080, y: 810, group: 'writing', color: '#191919' },
+      { name: 'Notion', url: 'https://notion.so', x: 2160, y: 700, group: 'productivity', color: '#3f62ff' },
+      { name: 'Figma', url: 'https://figma.com', x: 2260, y: 560, group: 'design', color: '#ff674d' },
+      { name: 'Stripe', url: 'https://stripe.com', x: 2010, y: 940, group: 'finance', color: '#d9ed60' },
+      { name: 'Tesla', url: 'https://tesla.com', x: 1840, y: 1040, group: 'auto', color: '#ff674d' },
+      { name: 'NASA', url: 'https://nasa.gov', x: 1680, y: 1080, group: 'science', color: '#3f62ff' },
+      { name: 'Coursera', url: 'https://coursera.org', x: 1480, y: 1160, group: 'education', color: '#d9ed60' },
+      { name: 'Udemy', url: 'https://udemy.com', x: 1300, y: 1200, group: 'education', color: '#ff674d' },
+      { name: 'Khan Academy', url: 'https://khanacademy.org', x: 1100, y: 1160, group: 'education', color: '#3f62ff' },
+      { name: 'SoundCloud', url: 'https://soundcloud.com', x: 980, y: 1220, group: 'music', color: '#ff674d' },
+      { name: 'Quora', url: 'https://quora.com', x: 830, y: 1180, group: 'knowledge', color: '#3f62ff' },
+      { name: 'Stack Overflow', url: 'https://stackoverflow.com', x: 680, y: 1220, group: 'code', color: '#d9ed60' },
+      { name: 'Mozilla', url: 'https://mozilla.org', x: 560, y: 1110, group: 'web', color: '#191919' },
+      { name: 'WordPress', url: 'https://wordpress.com', x: 430, y: 980, group: 'publish', color: '#3f62ff' },
+      { name: 'Blogger', url: 'https://blogger.com', x: 350, y: 860, group: 'publish', color: '#d9ed60' },
+      { name: 'Tumblr', url: 'https://tumblr.com', x: 280, y: 700, group: 'community', color: '#ff674d' },
+      { name: 'eBay', url: 'https://ebay.com', x: 600, y: 200, group: 'commerce', color: '#d9ed60' },
+      { name: 'Walmart', url: 'https://walmart.com', x: 820, y: 190, group: 'commerce', color: '#3f62ff' },
+      { name: 'Target', url: 'https://target.com', x: 930, y: 170, group: 'commerce', color: '#ff674d' },
+      { name: 'Etsy', url: 'https://etsy.com', x: 1040, y: 180, group: 'craft', color: '#d9ed60' },
+      { name: 'IMDb', url: 'https://imdb.com', x: 1180, y: 160, group: 'media', color: '#3f62ff' },
+      { name: 'Weather', url: 'https://weather.com', x: 1320, y: 230, group: 'utility', color: '#ff674d' },
+      { name: 'MapQuest', url: 'https://mapquest.com', x: 1450, y: 210, group: 'maps', color: '#3f62ff' }
     ];
 
-    const connect = [
-      ['atlass', 'portfolio'],
-      ['atlass', 'store'],
-      ['atlass', 'community'],
-      ['portfolio', 'agency'],
-      ['store', 'world'],
-      ['magazine', 'world'],
-      ['dashboard', 'world'],
-      ['community', 'magazine'],
-      ['agency', 'store'],
-      ['community', 'dashboard']
+    const connections = [
+      ['Google', 'YouTube'], ['Google','Gmail'], ['Google', 'Bing'], ['Google', 'Wikipedia'],
+      ['YouTube','Netflix'], ['YouTube','Twitch'], ['YouTube','Instagram'],
+      ['Facebook','Instagram'], ['Facebook','Meta'],
+      ['Instagram','Pinterest'], ['Instagram','Threads'],
+      ['X','LinkedIn'], ['X','Reddit'], ['X','Twitter'],
+      ['LinkedIn','GitHub'], ['LinkedIn','Microsoft'],
+      ['GitHub','Stack Overflow'], ['GitHub','Wikipedia'],
+      ['Reddit','Discord'], ['Reddit','Wikipedia'],
+      ['Amazon','eBay'], ['Amazon','Walmart'], ['Amazon','Etsy'], ['Amazon','Shopify'],
+      ['Netflix','Spotify'], ['Netflix','IMDb'],
+      ['Spotify','Apple'], ['Spotify','SoundCloud'],
+      ['Apple','Microsoft'], ['Apple','Dropbox'],
+      ['Microsoft','Adobe'], ['Microsoft','LinkedIn'], ['Microsoft','GitHub'],
+      ['Adobe','Canva'], ['Adobe','Figma'],
+      ['Dropbox','Google'], ['Dropbox','Notion'],
+      ['Airbnb','Booking'], ['Airbnb','MapQuest'],
+      ['Shopify','PayPal'], ['Shopify','Stripe'],
+      ['PayPal','Stripe'], ['PayPal','Amazon'],
+      ['Pinterest','Canva'], ['Pinterest','Instagram'],
+      ['Discord','Slack'], ['Discord','Reddit'],
+      ['Slack','Google'], ['Slack','Notion'],
+      ['Gmail','Google'], ['Yahoo','Google'], ['Bing','Google'],
+      ['BBC','CNN'], ['BBC','NPR'], ['CNN','NPR'],
+      ['Medium','Wikipedia'], ['Medium','Reddit'],
+      ['Notion','Figma'], ['Notion','Canva'],
+      ['Stripe','PayPal'], ['Stripe','Shopify'],
+      ['Tesla','Apple'], ['Tesla','Google'],
+      ['NASA','Wikipedia'], ['NASA','Google'],
+      ['Coursera','Khan Academy'], ['Coursera','Udemy'], ['Coursera','Wikipedia'],
+      ['Udemy','Coursera'], ['Khan Academy','Wikipedia'],
+      ['SoundCloud','Spotify'], ['Quora','Wikipedia'],
+      ['Stack Overflow','GitHub'], ['Stack Overflow','Wikipedia'],
+      ['Mozilla','Google'], ['WordPress','Blogger'], ['WordPress','Wikipedia'],
+      ['Blogger','Tumblr'], ['Tumblr','Reddit'],
+      ['Wikipedia','Google'], ['Wikipedia','Reddit'], ['Wikipedia','BBC'],
+      ['Weather','MapQuest'], ['MapQuest','Google'], ['IMDb','Netflix'],
+      ['Target','Walmart'], ['Target','Amazon'], ['Etsy','Pinterest'], ['Etsy','Shopify'],
+      ['Weather','MapQuest'], ['Google','MapQuest']
     ];
 
-    const mapCenter = { x: 50, y: 50 };
+    const siteMap = new Map(sites.map((site) => [site.name, site]));
+    const safeConnections = [];
 
-    connect.forEach(([from, to]) => {
-      const a = nodes.find((n) => n.id === from);
-      const b = nodes.find((n) => n.id === to);
-      const dx = b.x - a.x;
-      const dy = b.y - a.y;
-      const length = Math.hypot(dx, dy);
-      const angle = Math.atan2(dy, dx) * 180 / Math.PI;
-
-      const link = document.createElement('span');
-      link.className = 'link';
-      link.style.left = `${a.x}%`;
-      link.style.top = `${a.y}%`;
-      link.style.width = `${length}%`;
-      link.style.transform = `rotate(${angle}deg)`;
-      link.style.opacity = '0.7';
-      network.appendChild(link);
+    connections.forEach(([source, target]) => {
+      if (siteMap.has(source) && siteMap.has(target)) {
+        safeConnections.push([source, target]);
+      }
     });
 
-    nodes.forEach((node) => {
-      const el = document.createElement('button');
-      el.type = 'button';
-      el.className = `node ${node.type}`;
-      el.title = node.label;
-      el.style.left = `${node.x}%`;
-      el.style.top = `${node.y}%`;
-      el.style.transform = 'translate(-50%, -50%)';
-      el.setAttribute('aria-label', node.label);
-      network.appendChild(el);
+    const svgNS = 'http://www.w3.org/2000/svg';
 
-      const label = document.createElement('span');
-      label.className = 'node-label';
-      label.textContent = node.label;
-      label.style.left = `${node.x + 2}%`;
-      label.style.top = `${node.y - 8}%`;
-      network.appendChild(label);
+    safeConnections.forEach(([source, target]) => {
+      const start = siteMap.get(source);
+      const end = siteMap.get(target);
+      const line = document.createElementNS(svgNS, 'line');
+      line.setAttribute('x1', start.x);
+      line.setAttribute('y1', start.y);
+      line.setAttribute('x2', end.x);
+      line.setAttribute('y2', end.y);
+      line.setAttribute('class', 'link');
+      graph.appendChild(line);
+    });
+
+    sites.forEach((site) => {
+      const link = document.createElementNS(svgNS, 'a');
+      link.setAttributeNS('http://www.w3.org/1999/xlink', 'href', site.url);
+      link.setAttribute('target', '_blank');
+      link.setAttribute('rel', 'noopener noreferrer');
+
+      const circle = document.createElementNS(svgNS, 'circle');
+      circle.setAttribute('cx', site.x);
+      circle.setAttribute('cy', site.y);
+      circle.setAttribute('r', 7);
+      circle.setAttribute('fill', site.color);
+      circle.setAttribute('class', 'node');
+      circle.setAttribute('aria-label', site.name);
+
+      const text = document.createElementNS(svgNS, 'text');
+      text.setAttribute('x', site.x + 12);
+      text.setAttribute('y', site.y - 8);
+      text.setAttribute('class', 'site-name');
+      text.textContent = site.name;
+
+      circle.addEventListener('mouseenter', (e) => {
+        tooltip.textContent = site.name;
+        tooltip.classList.add('visible');
+        tooltip.style.left = `${e.clientX}px`;
+        tooltip.style.top = `${e.clientY}px`;
+      });
+
+      circle.addEventListener('mousemove', (e) => {
+        tooltip.style.left = `${e.clientX}px`;
+        tooltip.style.top = `${e.clientY}px`;
+      });
+
+      circle.addEventListener('mouseleave', () => {
+        tooltip.classList.remove('visible');
+      });
+
+      link.appendChild(circle);
+      link.appendChild(text);
+      graph.appendChild(link);
+    });
+
+    const state = { scale: 1, x: 30, y: 20 };
+
+    function updateWorld() {
+      world.style.transform = `translate(${state.x}px, ${state.y}px) scale(${state.scale})`;
+    }
+
+    updateWorld();
+
+    viewport.addEventListener('pointerdown', (event) => {
+      viewport.classList.add('dragging');
+      viewport.setPointerCapture(event.pointerId);
+      state.dragStartX = event.clientX - state.x;
+      state.dragStartY = event.clientY - state.y;
+    });
+
+    viewport.addEventListener('pointermove', (event) => {
+      if (!state.dragStartX && !state.dragStartY && state.dragStartX !== 0 && state.dragStartY !== 0) return;
+      if (event.buttons !== 1) return;
+      state.x = event.clientX - state.dragStartX;
+      state.y = event.clientY - state.dragStartY;
+      updateWorld();
+    });
+
+    viewport.addEventListener('pointerup', () => {
+      viewport.classList.remove('dragging');
+      state.dragStartX = null;
+      state.dragStartY = null;
+    });
+
+    viewport.addEventListener('pointerleave', () => {
+      viewport.classList.remove('dragging');
+      state.dragStartX = null;
+      state.dragStartY = null;
+    });
+
+    viewport.addEventListener('wheel', (event) => {
+      event.preventDefault();
+      const delta = event.deltaY * -0.0012;
+      const nextScale = Math.min(2.8, Math.max(0.55, state.scale * (1 + delta)));
+      state.scale = nextScale;
+      updateWorld();
+    }, { passive: false });
+
+    document.getElementById('zoomIn').addEventListener('click', () => {
+      state.scale = Math.min(2.8, state.scale + 0.14);
+      updateWorld();
+    });
+
+    document.getElementById('zoomOut').addEventListener('click', () => {
+      state.scale = Math.max(0.55, state.scale - 0.14);
+      updateWorld();
+    });
+
+    document.getElementById('reset').addEventListener('click', () => {
+      state.scale = 1;
+      state.x = 30;
+      state.y = 20;
+      updateWorld();
     });
   </script>
 </body>
