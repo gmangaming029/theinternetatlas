@@ -47,6 +47,7 @@
 		.card { border: 1px solid var(--ink); min-height: 320px; display: flex; flex-direction: column; background: #e9e5dc; transition: transform .25s, opacity .25s; }
 		.card:hover { transform: translateY(-6px); }
 		.card.hidden { display: none; }
+		.card-link { display: block; height: 100%; color: inherit; text-decoration: none; }
 		.preview { height: 200px; position: relative; overflow: hidden; background-size: cover; background-position: center; border-bottom: 1px solid var(--ink); }
 		.preview:after { content: ''; position: absolute; inset: 0; background: linear-gradient(120deg, rgba(25,25,25,.18), transparent 65%); }
 		.preview.one { background-image: url('https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=900&q=80'); }
@@ -71,12 +72,12 @@
 		<div class="marquee"><div>PORTFOLIOS <b>✳</b> STORES <b>✳</b> PUBLICATIONS <b>✳</b> COMMUNITIES <b>✳</b> TOOLS <b>✳</b> STUDIOS <b>✳</b> PORTFOLIOS <b>✳</b> STORES <b>✳</b> PUBLICATIONS <b>✳</b></div></div>
 		<section class="explore wrap" id="explore"><div class="section-head"><div><div class="eyebrow">01 / The collection</div><h2>Choose your<br>starting point.</h2></div><div class="filters" role="group" aria-label="Filter website types"><button class="filter active" data-filter="all">All sites</button><button class="filter" data-filter="work">Work</button><button class="filter" data-filter="culture">Culture</button><button class="filter" data-filter="commerce">Commerce</button><button class="filter" data-filter="utility">Utility</button></div></div>
 			<div class="grid">
-				<article class="card" data-type="work"><div class="preview one"><span class="card-number">01</span></div><div class="card-body"><div><p>WORK / IDENTITY</p><h3>Portfolio</h3></div><span class="arrow">↗</span></div></article>
-				<article class="card" data-type="commerce"><div class="preview two"><span class="card-number">02</span></div><div class="card-body"><div><p>COMMERCE / CATALOG</p><h3>Online store</h3></div><span class="arrow">↗</span></div></article>
-				<article class="card" data-type="culture"><div class="preview three"><span class="card-number">03</span></div><div class="card-body"><div><p>CULTURE / STORY</p><h3>Magazine</h3></div><span class="arrow">↗</span></div></article>
-				<article class="card" data-type="work"><div class="preview four"><span class="card-number">04</span></div><div class="card-body"><div><p>WORK / SERVICE</p><h3>Agency</h3></div><span class="arrow">↗</span></div></article>
-				<article class="card" data-type="culture"><div class="preview five"><span class="card-number">05</span></div><div class="card-body"><div><p>CULTURE / PEOPLE</p><h3>Community</h3></div><span class="arrow">↗</span></div></article>
-				<article class="card" data-type="utility"><div class="preview six"><span class="card-number">06</span></div><div class="card-body"><div><p>UTILITY / PRODUCT</p><h3>Dashboard</h3></div><span class="arrow">↗</span></div></article>
+				<article class="card" data-type="work"><a class="card-link" href="portfolio.html"><div class="preview one"><span class="card-number">01</span></div><div class="card-body"><div><p>WORK / IDENTITY</p><h3>Portfolio</h3></div><span class="arrow">↗</span></div></a></article>
+				<article class="card" data-type="commerce"><a class="card-link" href="store.html"><div class="preview two"><span class="card-number">02</span></div><div class="card-body"><div><p>COMMERCE / CATALOG</p><h3>Online store</h3></div><span class="arrow">↗</span></div></a></article>
+				<article class="card" data-type="culture"><a class="card-link" href="magazine.html"><div class="preview three"><span class="card-number">03</span></div><div class="card-body"><div><p>CULTURE / STORY</p><h3>Magazine</h3></div><span class="arrow">↗</span></div></a></article>
+				<article class="card" data-type="work"><a class="card-link" href="agency.html"><div class="preview four"><span class="card-number">04</span></div><div class="card-body"><div><p>WORK / SERVICE</p><h3>Agency</h3></div><span class="arrow">↗</span></div></a></article>
+				<article class="card" data-type="culture"><a class="card-link" href="community.html"><div class="preview five"><span class="card-number">05</span></div><div class="card-body"><div><p>CULTURE / PEOPLE</p><h3>Community</h3></div><span class="arrow">↗</span></div></a></article>
+				<article class="card" data-type="utility"><a class="card-link" href="dashboard.html"><div class="preview six"><span class="card-number">06</span></div><div class="card-body"><div><p>UTILITY / PRODUCT</p><h3>Dashboard</h3></div><span class="arrow">↗</span></div></a></article>
 			</div>
 		</section>
 	</main>
