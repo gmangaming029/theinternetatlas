@@ -151,13 +151,23 @@
     });
 
     async function request(path, options = {}) {
-      const response = await fetch(path, { headers: { 'Content-Type': 'application/json' }, ...options });
-      const body = await response.json();
-      if (!response.ok) throw new Error(body.error || 'Request failed');
-      return body;
+      const controller = new AbortController();
+      const timeout = window.setTimeout(() => controller.abort(), 10000);
+      try {
+        const response = await fetch(path, { headers: { 'Content-Type': 'application/json' }, signal: controller.signal, ...options });
+        const body = await response.json();
+        if (!response.ok) throw new Error(body.error || 'Request failed');
+        return body;
+      } catch (error) {
+        if (error.name === 'AbortError') throw new Error('The server took too long to respond. Check that server.py is running on port 8100.');
+        if (error instanceof TypeError) throw new Error('Could not connect to the Atlas server on port 8100.');
+        throw error;
+      } finally {
+        window.clearTimeout(timeout);
+      }
     }
 
-    async function loadDashboard() {
+    async function loadDashboard(showError = false) {
       try {
         const data = await request('/api/dashboard');
         showDashboard();
@@ -173,20 +183,25 @@
         dashboardRoot.classList.toggle('compact', data.preferences.density === 'compact');
       } catch (error) {
         showAuth();
+        if (showError) setMessage(error.message);
       }
     }
 
     authForm.addEventListener('submit', async (event) => {
       event.preventDefault();
       setMessage('Working...');
+      authSubmit.disabled = true;
       try {
         await request(registrationMode ? '/api/auth/register' : '/api/auth/login', {
           method: 'POST',
           body: JSON.stringify({ email: document.getElementById('email').value, password: document.getElementById('password').value })
         });
-        await loadDashboard();
+        await loadDashboard(true);
       } catch (error) {
         setMessage(error.message);
+      } finally {
+        authSubmit.disabled = false;
+        authSubmit.textContent = registrationMode ? 'Create account' : 'Sign in';
       }
     });
 
