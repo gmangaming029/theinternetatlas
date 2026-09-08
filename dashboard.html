@@ -155,7 +155,12 @@
       const timeout = window.setTimeout(() => controller.abort(), 10000);
       try {
         const response = await fetch(path, { headers: { 'Content-Type': 'application/json' }, signal: controller.signal, ...options });
-        const body = await response.json();
+        const contentType = response.headers.get('content-type') || '';
+        const rawBody = await response.text();
+        if (!contentType.includes('application/json')) {
+          throw new Error(`The server returned HTML instead of JSON (${response.status}). Restart server.py on port 8100.`);
+        }
+        const body = JSON.parse(rawBody);
         if (!response.ok) throw new Error(body.error || 'Request failed');
         return body;
       } catch (error) {
@@ -219,8 +224,8 @@
         value: Number(document.querySelector(`.metric-value[data-metric="${key}"]`).value)
       }]));
       try {
-        await request('/api/dashboard', {
-          method: 'PATCH',
+        await request('/api/dashboard/update', {
+          method: 'POST',
           body: JSON.stringify({ metrics, preferences: { accent_color: document.getElementById('accentColor').value, density: document.getElementById('density').value } })
         });
         saveMessage.textContent = 'Saved.';

@@ -157,6 +157,9 @@ class AtlasHandler(SimpleHTTPRequestHandler):
         except (ValueError, json.JSONDecodeError):
             return json_response(self, {"error": "Invalid JSON body"}, 400)
 
+        if path == "/api/dashboard/update":
+            return self.update_dashboard(payload)
+
         if path == "/api/auth/register":
             email = str(payload.get("email", "")).strip().lower()
             password = str(payload.get("password", ""))
@@ -222,6 +225,13 @@ class AtlasHandler(SimpleHTTPRequestHandler):
             payload = self.read_json()
         except (ValueError, json.JSONDecodeError):
             return json_response(self, {"error": "Invalid JSON body"}, 400)
+
+        return self.update_dashboard(payload, user)
+
+    def update_dashboard(self, payload, user=None):
+        user = user or self.require_user()
+        if not user:
+            return
 
         metrics = payload.get("metrics", {})
         preferences = payload.get("preferences", {})
