@@ -170,6 +170,7 @@
     async function loadDashboard(showError = false) {
       try {
         const data = await request('/api/dashboard');
+        const preferences = data.preferences || { accent_color: '#ff674d', density: 'comfortable' };
         showDashboard();
         userEmail.textContent = data.user.email;
         metricGrid.innerHTML = data.metrics.map((metric) => `<article class="metric-card"><span>${metric.metric_label}</span><strong>${metric.metric_value}${metric.metric_key === 'conversion' || metric.metric_key === 'uptime' ? '%' : ''}</strong></article>`).join('');
@@ -177,10 +178,10 @@
           document.querySelector(`.metric-label[data-metric="${metric.metric_key}"]`).value = metric.metric_label;
           document.querySelector(`.metric-value[data-metric="${metric.metric_key}"]`).value = metric.metric_value;
         });
-        document.getElementById('accentColor').value = data.preferences.accent_color;
-        document.getElementById('density').value = data.preferences.density;
-        dashboardRoot.style.setProperty('--coral', data.preferences.accent_color);
-        dashboardRoot.classList.toggle('compact', data.preferences.density === 'compact');
+        document.getElementById('accentColor').value = preferences.accent_color || '#ff674d';
+        document.getElementById('density').value = preferences.density || 'comfortable';
+        dashboardRoot.style.setProperty('--coral', preferences.accent_color || '#ff674d');
+        dashboardRoot.classList.toggle('compact', preferences.density === 'compact');
       } catch (error) {
         showAuth();
         if (showError) setMessage(error.message);
