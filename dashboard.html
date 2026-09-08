@@ -5,6 +5,44 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Atlas / Dashboard</title>
   <link rel="stylesheet" href="style.css" />
+  <style>
+    .account-layout { max-width: 920px; margin: 0 auto; }
+    .account-panel { border: 1px solid var(--ink); background: var(--card); padding: 28px; }
+    .account-panel h1 { max-width: 620px; }
+    .account-form { display: grid; grid-template-columns: 1fr 1fr auto; gap: 12px; align-items: end; margin-top: 24px; }
+    .account-form label { display: grid; gap: 8px; font: 500 11px 'DM Mono', monospace; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+    .account-form input { width: 100%; border: 1px solid var(--ink); background: var(--paper); color: var(--ink); padding: 13px; font: 15px 'Space Grotesk', sans-serif; }
+    .password-field { position: relative; }
+    .password-field input { padding-right: 52px; }
+    .password-toggle { position: absolute; right: 7px; bottom: 7px; width: 34px; height: 34px; border: 1px solid var(--ink); border-radius: 50%; background: transparent; color: var(--ink); cursor: pointer; font: 16px 'Space Grotesk', sans-serif; }
+    .password-toggle:hover, .password-toggle:focus-visible { background: var(--ink); color: var(--paper); }
+    .account-form button { border: 0; cursor: pointer; }
+    .account-switch { margin-top: 18px; display: flex; gap: 14px; align-items: center; flex-wrap: wrap; font-size: 13px; }
+    .account-switch button { border: 0; border-bottom: 1px solid var(--ink); padding: 0 0 3px; background: transparent; cursor: pointer; font: inherit; }
+    .account-message { min-height: 22px; margin: 14px 0 0; color: var(--coral); font: 500 12px 'DM Mono', monospace; }
+    [hidden] { display: none !important; }
+    .dashboard-view { display: block; }
+    .dashboard-head { display: flex; justify-content: space-between; align-items: end; gap: 20px; margin-bottom: 26px; }
+    .dashboard-head h1 { margin-bottom: 0; }
+    .logout-button { border: 1px solid var(--ink); background: transparent; border-radius: 999px; padding: 10px 15px; cursor: pointer; font: 600 12px 'Space Grotesk', sans-serif; }
+    .metric-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+    .metric-card { border: 1px solid var(--ink); padding: 20px; background: var(--card); }
+    .metric-card strong { display: block; margin: 8px 0; font-size: 38px; letter-spacing: -.06em; }
+    .metric-card span { font: 500 11px 'DM Mono', monospace; text-transform: uppercase; color: var(--muted); }
+    .customize-panel { margin-top: 24px; border: 1px solid var(--ink); padding: 20px; background: var(--card); }
+    .customize-head { display: flex; justify-content: space-between; align-items: center; gap: 18px; }
+    .customize-head h2 { font-size: 28px; }
+    .customize-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 18px; }
+    .customize-grid label { display: grid; gap: 7px; font: 500 10px 'DM Mono', monospace; text-transform: uppercase; color: var(--muted); }
+    .customize-grid input, .customize-grid select { width: 100%; border: 1px solid var(--ink); background: var(--paper); color: var(--ink); padding: 10px; font: 14px 'Space Grotesk', sans-serif; }
+    .customize-grid input[type="color"] { height: 42px; padding: 4px; cursor: pointer; }
+    .customize-actions { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-top: 18px; }
+    .save-message { min-height: 18px; color: var(--muted); font: 500 11px 'DM Mono', monospace; }
+    .dashboard-view.compact .metric-grid { gap: 8px; }
+    .dashboard-view.compact .metric-card { padding: 12px; }
+    .dashboard-view.compact .metric-card strong { font-size: 30px; }
+    @media (max-width: 760px) { .account-form, .metric-grid, .customize-grid { grid-template-columns: 1fr; } .dashboard-head, .customize-head, .customize-actions { display: block; } .logout-button, .customize-actions .primary-button { margin-top: 18px; } }
+  </style>
 </head>
 <body>
   <header class="topbar">
@@ -25,73 +63,39 @@
     </div>
   </header>
 
-  <main class="wrap page-shell">
-    <section class="hero-panel">
-      <div>
-        <div class="eyebrow">Utility / product</div>
-        <h1>Dashboard websites that turn <em>data into actions</em>.</h1>
-        <p class="hero-copy">Utility websites prioritize speed, clarity, and reliability. They help users get things done faster without visual clutter or confusion.</p>
-        <div class="feature-row">
-          <a class="primary-button" href="#showcase">See interface patterns</a>
-          <a class="secondary-button" href="index.html">Back to atlas</a>
+  <main class="wrap page-shell account-layout">
+    <section class="account-panel" id="authPanel">
+      <div class="eyebrow">Private workspace</div>
+      <h1 id="authTitle">Sign in to your <em>dashboard</em>.</h1>
+      <p class="hero-copy">Create an Atlas account to save your dashboard metrics and return to them from this browser.</p>
+      <form class="account-form" id="authForm">
+        <label>Email<input id="email" type="email" autocomplete="email" required /></label>
+        <label>Password<div class="password-field"><input id="password" type="password" minlength="8" autocomplete="current-password" required /><button class="password-toggle" id="passwordToggle" type="button" aria-label="Show password" aria-pressed="false">◉</button></div></label>
+        <button class="primary-button" id="authSubmit" type="submit">Sign in</button>
+      </form>
+      <p class="account-message" id="authMessage" role="status"></p>
+      <div class="account-switch"><span id="switchPrompt">Need an account?</span><button id="switchMode" type="button">Create one</button><a class="secondary-button" href="index.html">Back to atlas</a></div>
+    </section>
+
+    <section class="dashboard-view" id="dashboardView" hidden>
+      <div class="dashboard-head"><div><div class="eyebrow">Authenticated workspace</div><h1>Good to see you, <em id="userEmail"></em>.</h1></div><button class="logout-button" id="logoutButton" type="button">Sign out</button></div>
+      <div class="metric-grid" id="metricGrid"></div>
+      <section class="customize-panel">
+        <div class="customize-head"><div><div class="eyebrow">Workspace settings</div><h2>Customize your dashboard.</h2></div></div>
+        <div class="customize-grid">
+          <label>Visits label<input class="metric-label" data-metric="visits" type="text" maxlength="60" /></label>
+          <label>Visits value<input class="metric-value" data-metric="visits" type="number" min="0" step="0.1" /></label>
+          <label>Projects label<input class="metric-label" data-metric="projects" type="text" maxlength="60" /></label>
+          <label>Projects value<input class="metric-value" data-metric="projects" type="number" min="0" step="0.1" /></label>
+          <label>Conversion label<input class="metric-label" data-metric="conversion" type="text" maxlength="60" /></label>
+          <label>Conversion value<input class="metric-value" data-metric="conversion" type="number" min="0" step="0.1" /></label>
+          <label>Uptime label<input class="metric-label" data-metric="uptime" type="text" maxlength="60" /></label>
+          <label>Uptime value<input class="metric-value" data-metric="uptime" type="number" min="0" step="0.1" /></label>
+          <label>Accent color<input id="accentColor" type="color" /></label>
+          <label>Card density<select id="density"><option value="comfortable">Comfortable</option><option value="compact">Compact</option></select></label>
         </div>
-      </div>
-      <div class="panel-visual" aria-label="Dashboard website visual illustration" style="background: linear-gradient(135deg, #d9d9ff, #f7f2ea 40%, #d4f7d1);">
-        <span class="panel-badge">Overview</span>
-      </div>
-    </section>
-
-    <section class="info-grid">
-      <article class="info-card"><strong>6</strong><span>Major data blocks</span></article>
-      <article class="info-card"><strong>2 sec</strong><span>To orient new users</span></article>
-      <article class="info-card"><strong>24/7</strong><span>Operational clarity</span></article>
-    </section>
-
-    <div class="section-header">
-      <div>
-        <div class="eyebrow">Product design</div>
-        <h2>Less decoration, more decision-making.</h2>
-      </div>
-    </div>
-
-    <section class="feature-grid">
-      <article class="feature-card">
-        <div class="meta">01 / Overview</div>
-        <h3>At-a-glance metrics</h3>
-        <p>Summaries turn raw data into a meaningful snapshot that users can interpret immediately.</p>
-      </article>
-      <article class="feature-card">
-        <div class="meta">02 / Workflow</div>
-        <h3>Action paths</h3>
-        <p>Prioritize tasks and decision points so users know the next move without hunting.</p>
-      </article>
-      <article class="feature-card">
-        <div class="meta">03 / Signals</div>
-        <h3>Monitoring</h3>
-        <p>Alerts, trends, and health indicators help people act before problems become bigger.</p>
-      </article>
-    </section>
-
-    <div class="section-header" id="showcase">
-      <div>
-        <div class="eyebrow">Examples</div>
-        <h2>Product dashboard styles.</h2>
-      </div>
-    </div>
-
-    <section class="showcase-grid">
-      <article class="showcase-card">
-        <div class="showcase-thumb thumb-dashboard"></div>
-        <div class="showcase-body">
-          <div class="meta">Analytics / SaaS</div>
-          <h3>Operations dashboard</h3>
-          <p>Useful for startups, internal tooling, analytics products, and SaaS platforms.</p>
-        </div>
-      </article>
-      <aside class="showcase-quote">
-        <div class="meta">Design principle</div>
-        <p>“The most useful utility interfaces feel calm, legible, and trust-building.”</p>
-      </aside>
+        <div class="customize-actions"><span class="save-message" id="saveMessage"></span><button class="primary-button" id="saveDashboard" type="button">Save changes</button></div>
+      </section>
     </section>
 
     <div class="page-footer">
@@ -99,5 +103,118 @@
       <span>Every kind of website</span>
     </div>
   </main>
+  <script>
+    const authForm = document.getElementById('authForm');
+    const authPanel = document.getElementById('authPanel');
+    const dashboardView = document.getElementById('dashboardView');
+    const authTitle = document.getElementById('authTitle');
+    const authSubmit = document.getElementById('authSubmit');
+    const authMessage = document.getElementById('authMessage');
+    const switchPrompt = document.getElementById('switchPrompt');
+    const switchMode = document.getElementById('switchMode');
+    const password = document.getElementById('password');
+    const passwordToggle = document.getElementById('passwordToggle');
+    const userEmail = document.getElementById('userEmail');
+    const metricGrid = document.getElementById('metricGrid');
+    const saveMessage = document.getElementById('saveMessage');
+    const dashboardRoot = document.getElementById('dashboardView');
+    let registrationMode = false;
+
+    function showAuth() {
+      authPanel.hidden = false;
+      dashboardView.hidden = true;
+    }
+
+    function showDashboard() {
+      authPanel.hidden = true;
+      dashboardView.hidden = false;
+    }
+
+    passwordToggle.addEventListener('click', () => {
+      const isVisible = password.type === 'text';
+      password.type = isVisible ? 'password' : 'text';
+      passwordToggle.textContent = isVisible ? '◉' : '◌';
+      passwordToggle.setAttribute('aria-label', isVisible ? 'Show password' : 'Hide password');
+      passwordToggle.setAttribute('aria-pressed', String(!isVisible));
+    });
+
+    function setMessage(message = '') { authMessage.textContent = message; }
+
+    switchMode.addEventListener('click', () => {
+      registrationMode = !registrationMode;
+      authTitle.innerHTML = registrationMode ? 'Create your <em>dashboard</em> account.' : 'Sign in to your <em>dashboard</em>.';
+      authSubmit.textContent = registrationMode ? 'Create account' : 'Sign in';
+      switchPrompt.textContent = registrationMode ? 'Already have an account?' : 'Need an account?';
+      switchMode.textContent = registrationMode ? 'Sign in' : 'Create one';
+      password.autocomplete = registrationMode ? 'new-password' : 'current-password';
+      setMessage();
+    });
+
+    async function request(path, options = {}) {
+      const response = await fetch(path, { headers: { 'Content-Type': 'application/json' }, ...options });
+      const body = await response.json();
+      if (!response.ok) throw new Error(body.error || 'Request failed');
+      return body;
+    }
+
+    async function loadDashboard() {
+      try {
+        const data = await request('/api/dashboard');
+        showDashboard();
+        userEmail.textContent = data.user.email;
+        metricGrid.innerHTML = data.metrics.map((metric) => `<article class="metric-card"><span>${metric.metric_label}</span><strong>${metric.metric_value}${metric.metric_key === 'conversion' || metric.metric_key === 'uptime' ? '%' : ''}</strong></article>`).join('');
+        data.metrics.forEach((metric) => {
+          document.querySelector(`.metric-label[data-metric="${metric.metric_key}"]`).value = metric.metric_label;
+          document.querySelector(`.metric-value[data-metric="${metric.metric_key}"]`).value = metric.metric_value;
+        });
+        document.getElementById('accentColor').value = data.preferences.accent_color;
+        document.getElementById('density').value = data.preferences.density;
+        dashboardRoot.style.setProperty('--coral', data.preferences.accent_color);
+        dashboardRoot.classList.toggle('compact', data.preferences.density === 'compact');
+      } catch (error) {
+        showAuth();
+      }
+    }
+
+    authForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      setMessage('Working...');
+      try {
+        await request(registrationMode ? '/api/auth/register' : '/api/auth/login', {
+          method: 'POST',
+          body: JSON.stringify({ email: document.getElementById('email').value, password: document.getElementById('password').value })
+        });
+        await loadDashboard();
+      } catch (error) {
+        setMessage(error.message);
+      }
+    });
+
+    document.getElementById('logoutButton').addEventListener('click', async () => {
+      await request('/api/auth/logout', { method: 'POST' });
+      window.location.reload();
+    });
+
+    document.getElementById('saveDashboard').addEventListener('click', async () => {
+      saveMessage.textContent = 'Saving...';
+      const metricKeys = ['visits', 'projects', 'conversion', 'uptime'];
+      const metrics = Object.fromEntries(metricKeys.map((key) => [key, {
+        label: document.querySelector(`.metric-label[data-metric="${key}"]`).value,
+        value: Number(document.querySelector(`.metric-value[data-metric="${key}"]`).value)
+      }]));
+      try {
+        await request('/api/dashboard', {
+          method: 'PATCH',
+          body: JSON.stringify({ metrics, preferences: { accent_color: document.getElementById('accentColor').value, density: document.getElementById('density').value } })
+        });
+        saveMessage.textContent = 'Saved.';
+        await loadDashboard();
+      } catch (error) {
+        saveMessage.textContent = error.message;
+      }
+    });
+
+    loadDashboard();
+  </script>
 </body>
 </html>
