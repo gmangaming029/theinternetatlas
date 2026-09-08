@@ -2,15 +2,18 @@
 
 Run this from the project folder while server.py is running:
     python example_api.py
+    python example_api.py --email you@example.com
+    python example_api.py --email you@example.com --password your-password
+    python example_api.py --email you@example.com --register
 """
 
+import argparse
+import getpass
 import json
 import urllib.error
 import urllib.request
 
 BASE_URL = "http://localhost:8100"
-EMAIL = "example-user@example.com"
-PASSWORD = "AtlasExample123"
 
 
 class ApiClient:
@@ -41,22 +44,31 @@ class ApiClient:
             raise RuntimeError(f"API request failed ({error.code}): {details}") from error
 
 
+def parse_arguments():
+    parser = argparse.ArgumentParser(description="Example client for the Atlas API")
+    parser.add_argument("--email", help="Account email; prompted when omitted")
+    parser.add_argument("--password", help="Account password; prompted securely when omitted")
+    parser.add_argument("--register", action="store_true", help="Create the account before updating the dashboard")
+    return parser.parse_args()
+
+
 def main():
+    arguments = parse_arguments()
+    email = arguments.email or input("Email: ").strip()
+    password = arguments.password or getpass.getpass("Password: ")
     client = ApiClient()
 
-    try:
+    if arguments.register:
         account = client.request(
             "/api/auth/register",
             method="POST",
-            payload={"email": EMAIL, "password": PASSWORD},
+            payload={"email": email, "password": password},
         )
-    except RuntimeError as error:
-        if "already exists" not in str(error):
-            raise
+    else:
         account = client.request(
             "/api/auth/login",
             method="POST",
-            payload={"email": EMAIL, "password": PASSWORD},
+            payload={"email": email, "password": password},
         )
 
     print(f"Signed in as {account['user']['email']}")
@@ -64,8 +76,8 @@ def main():
     print("Before:", before["metrics"])
 
     client.request(
-        "/api/dashboard",
-        method="PATCH",
+        "/api/dashboard/update",
+        method="POST",
         payload={
             "metrics": {
                 "visits": {"label": "Example visits", "value": 2400},
