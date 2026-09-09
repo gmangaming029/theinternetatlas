@@ -75,9 +75,9 @@ def main():
     before = client.request("/api/dashboard")
     print("Before:", before["metrics"])
 
-    client.request(
-        "/api/dashboard",
-        method="PATCH",
+    updated_dashboard = client.request(
+        "/api/dashboard/update",
+        method="POST",
         payload={
             "metrics": {
                 "visits": {"label": "Example visits", "value": 2400},
@@ -89,6 +89,7 @@ def main():
         },
     )
 
+    print("Update response:", updated_dashboard)
     after = client.request("/api/dashboard")
     print("After:", after["metrics"])
     print("Preferences:", after["preferences"])

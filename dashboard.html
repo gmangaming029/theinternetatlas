@@ -32,6 +32,9 @@
     .customize-panel { margin-top: 24px; border: 1px solid var(--ink); padding: 20px; background: var(--card); }
     .customize-head { display: flex; justify-content: space-between; align-items: center; gap: 18px; }
     .customize-head h2 { font-size: 28px; }
+    .panel-toggle { border: 1px solid var(--ink); border-radius: 999px; padding: 9px 13px; background: transparent; color: var(--ink); cursor: pointer; font: 600 11px 'Space Grotesk', sans-serif; }
+    .panel-toggle:hover, .panel-toggle:focus-visible { background: var(--ink); color: var(--paper); }
+    .customize-panel.collapsed .customize-grid, .customize-panel.collapsed .customize-actions { display: none; }
     .customize-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 18px; }
     .customize-grid label { display: grid; gap: 7px; font: 500 10px 'DM Mono', monospace; text-transform: uppercase; color: var(--muted); }
     .customize-grid input, .customize-grid select { width: 100%; border: 1px solid var(--ink); background: var(--paper); color: var(--ink); padding: 10px; font: 14px 'Space Grotesk', sans-serif; }
@@ -80,8 +83,8 @@
     <section class="dashboard-view" id="dashboardView" hidden>
       <div class="dashboard-head"><div><div class="eyebrow">Authenticated workspace</div><h1>Good to see you, <em id="userEmail"></em>.</h1></div><button class="logout-button" id="logoutButton" type="button">Sign out</button></div>
       <div class="metric-grid" id="metricGrid"></div>
-      <section class="customize-panel">
-        <div class="customize-head"><div><div class="eyebrow">Workspace settings</div><h2>Customize your dashboard.</h2></div></div>
+      <section class="customize-panel" id="customizePanel">
+        <div class="customize-head"><div><div class="eyebrow">Workspace settings</div><h2>Customize your dashboard.</h2></div><button class="panel-toggle" id="panelToggle" type="button" aria-expanded="true">Hide editor</button></div>
         <div class="customize-grid">
           <label>Visits label<input class="metric-label" data-metric="visits" type="text" maxlength="60" /></label>
           <label>Visits value<input class="metric-value" data-metric="visits" type="number" min="0" step="0.1" /></label>
@@ -118,7 +121,15 @@
     const metricGrid = document.getElementById('metricGrid');
     const saveMessage = document.getElementById('saveMessage');
     const dashboardRoot = document.getElementById('dashboardView');
+    const customizePanel = document.getElementById('customizePanel');
+    const panelToggle = document.getElementById('panelToggle');
     let registrationMode = false;
+
+    panelToggle.addEventListener('click', () => {
+      const isCollapsed = customizePanel.classList.toggle('collapsed');
+      panelToggle.textContent = isCollapsed ? 'Show editor' : 'Hide editor';
+      panelToggle.setAttribute('aria-expanded', String(!isCollapsed));
+    });
 
     function showAuth() {
       authPanel.hidden = false;
