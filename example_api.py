@@ -2,14 +2,21 @@
 
 Run this from the project folder while server.py is running:
     python example_api.py
-    python example_api.py --email you@example.com
-    python example_api.py --email you@example.com --password your-password
-    python example_api.py --email you@example.com --register
+
+Or provide credentials without editing this file:
+    python example_api.py you@example.com
+    python example_api.py you@example.com your-password
+
+Environment variables are also supported:
+    $env:ATLAS_EMAIL = "you@example.com"
+    $env:ATLAS_PASSWORD = "your-password"
+    python example_api.py
 """
 
-import argparse
-import getpass
 import json
+import getpass
+import os
+import sys
 import urllib.error
 import urllib.request
 
@@ -44,27 +51,20 @@ class ApiClient:
             raise RuntimeError(f"API request failed ({error.code}): {details}") from error
 
 
-def parse_arguments():
-    parser = argparse.ArgumentParser(description="Example client for the Atlas API")
-    parser.add_argument("--email", help="Account email; prompted when omitted")
-    parser.add_argument("--password", help="Account password; prompted securely when omitted")
-    parser.add_argument("--register", action="store_true", help="Create the account before updating the dashboard")
-    return parser.parse_args()
-
-
 def main():
-    arguments = parse_arguments()
-    email = arguments.email or input("Email: ").strip()
-    password = arguments.password or getpass.getpass("Password: ")
+    email = os.getenv("ATLAS_EMAIL") or (sys.argv[1] if len(sys.argv) > 1 else input("Email: ").strip())
+    password = os.getenv("ATLAS_PASSWORD") or (sys.argv[2] if len(sys.argv) > 2 else getpass.getpass("Password: "))
     client = ApiClient()
 
-    if arguments.register:
+    try:
         account = client.request(
             "/api/auth/register",
             method="POST",
             payload={"email": email, "password": password},
         )
-    else:
+    except RuntimeError as error:
+        if "already exists" not in str(error):
+            raise
         account = client.request(
             "/api/auth/login",
             method="POST",
@@ -76,8 +76,8 @@ def main():
     print("Before:", before["metrics"])
 
     client.request(
-        "/api/dashboard/update",
-        method="POST",
+        "/api/dashboard",
+        method="PATCH",
         payload={
             "metrics": {
                 "visits": {"label": "Example visits", "value": 2400},
