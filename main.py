@@ -1,15 +1,16 @@
 import hashlib
 import http.cookies
 import json
+import os
 import secrets
 import sqlite3
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
-HOST = "127.0.0.1"
-PORT = 8100
-DATABASE_PATH = Path(__file__).resolve().parent / "atlas.db"
+HOST = os.getenv("ATLAS_HOST", "0.0.0.0")
+PORT = int(os.getenv("ATLAS_PORT", "8100"))
+DATABASE_PATH = Path(os.getenv("ATLAS_DATABASE_PATH", Path(__file__).resolve().parent / "atlas.db"))
 
 
 def get_connection():
