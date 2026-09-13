@@ -9,7 +9,7 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
 HOST = os.getenv("ATLAS_HOST", "0.0.0.0")
-PORT = int(os.getenv("ATLAS_PORT", "8100"))
+PORT = int(os.getenv("PORT", os.getenv("ATLAS_PORT", "8100")))
 DATABASE_PATH = Path(os.getenv("ATLAS_DATABASE_PATH", Path(__file__).resolve().parent / "atlas.db"))
 
 
