@@ -32,4 +32,4 @@ This project does not currently specify a license.
 
 ## Warning
 
-this project is work in progress
+this project is work in progress, this branch is never to be merged with main, it is to be updated separatly and built around docker
